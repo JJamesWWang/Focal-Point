@@ -4,6 +4,8 @@ extends "res://entities/enemies/floor/FloorEnemy.gd"
 
 export (int) var DEPTH_BY_TILE = 1
 
+const PLAYER_PIXEL_HEIGHT = 24
+const TILE_PIXEL_DEPTH = 16
 var main_instances = ResourceLoader.main_instances
 var on_player = false
 
@@ -23,8 +25,9 @@ func follow_mouse() -> void:
 			.follow_mouse()
 		
 		# Once the player clears one layer of tileset, reinstate player world
-		# collsion.
-		if player.position.y > position.y + 25 + (DEPTH_BY_TILE * 16) and on_player:
+		# collsion. Added an extra pixel for some padding so the player doesn't
+		# stick to the roof.
+		if player.position.y > position.y + PLAYER_PIXEL_HEIGHT + 1 + (DEPTH_BY_TILE * TILE_PIXEL_DEPTH) and on_player:
 			on_player = false
 			player.set_collision_mask_bit(0, true)
 

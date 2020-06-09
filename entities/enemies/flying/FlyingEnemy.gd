@@ -5,7 +5,9 @@ enum DIRECTION {LEFT = -1, RIGHT = 1}
 export(DIRECTION) var FLYING_DIRECTION = DIRECTION.RIGHT
 export(int) var LEFT_BOUND
 export(int) var RIGHT_BOUND
-export(int) var pause_time = 3
+export(int) var PAUSE_TIME = 3
+export(float) var DECELERATION_MOD = 4 # Increasing deceleration mod decreases amound of deceleration applied.
+export(float) var BOUND_PERCENTAGE_FOR_DECELERATION = 0.5 # Decreasing bound distance alloted for deceleration makes sharper decelerations.
 export(float) var ACCELERATION = 0.75
 
 var start_x
@@ -25,7 +27,7 @@ onready var left_bound_cast: RayCast2D = $LeftBoundCast
 func _ready() -> void:
 	start_x = position.x
 	motion.x = SPEED * FLYING_DIRECTION
-	patrol_timer.wait_time = pause_time
+	patrol_timer.wait_time = PAUSE_TIME
 	rotation_degrees = FLYING_DIRECTION * 30
 	wall_cast.scale.x = FLYING_DIRECTION
 	original_position = position
@@ -98,10 +100,10 @@ func in_patrol_area() -> bool:
 	
 	# Starts decelerating halfway to the patrol flip. Checks for moving right and
 	# moving left.
-	if (to_right_bound < 0.5 * RIGHT_BOUND and FLYING_DIRECTION == DIRECTION.RIGHT):
+	if (to_right_bound < BOUND_PERCENTAGE_FOR_DECELERATION * RIGHT_BOUND and FLYING_DIRECTION == DIRECTION.RIGHT):
 		decelerate(to_right_bound, to_left_bound)
 	
-	if (to_left_bound < 0.5 * LEFT_BOUND and FLYING_DIRECTION == DIRECTION.LEFT):
+	if (to_left_bound < BOUND_PERCENTAGE_FOR_DECELERATION * LEFT_BOUND and FLYING_DIRECTION == DIRECTION.LEFT):
 		decelerate(to_right_bound, to_left_bound)
 		
 	# Gave some room so enemy doesn't decelerated too much before the flip.
@@ -124,7 +126,7 @@ func decelerate_calc(to_right_bound, to_left_bound) -> float:
 		acceleration_mod = motion.x/to_right_bound
 	else:
 		acceleration_mod = motion.x/to_left_bound
-	var deceleration = (4 * pow(e, acceleration_mod/2))/pow((1 + pow(e, acceleration_mod/2)), 2.0)
+	var deceleration = (4 * pow(e, acceleration_mod/DECELERATION_MOD))/pow((1 + pow(e, acceleration_mod/DECELERATION_MOD)), 2.0)
 	#var deceleration = pow(2.71828, -acceleration_mod/4)
 	return deceleration
 
